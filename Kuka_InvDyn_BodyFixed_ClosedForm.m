@@ -14,85 +14,127 @@ n = 7;
 global g; % gravity vector
 g = [0; 0; 9.80665];
 
-%% Joint screw coordinates in spatial representation
-% Geometric parameters of the robot
-d1 = 0.333;
-d3 = 0.316;
-a4 = 0.0825;
-d5 = 0.384;
-a7 = 0.088;
-Param(1).Y = ScrewCoordinatesIFR([0,0,d1],[0,0,1]);
-Param(2).Y = ScrewCoordinatesIFR([0,0,d1],[0,1,0]);
-Param(3).Y = ScrewCoordinatesIFR([0,0,d1+d3],[0,0,1]);
-Param(4).Y = ScrewCoordinatesIFR([a4,0,d1+d3],[0,-1,0]);
-Param(5).Y = ScrewCoordinatesIFR([0,0,d1+d3+d5],[0,0,1]);
-Param(6).Y = ScrewCoordinatesIFR([0,0,d1+d3+d5],[0,-1,0]);
-Param(7).Y = ScrewCoordinatesIFR([a7,0,d1+d3+d5],[0,0,-1]);
+% Geometric parameters of the robot [Y.R. Sturz, 2017]
+r3 = 0.42;
+r5 = 0.4;
 
-%% Reference configurations of bodies (i.e. of body-fixed reference frames) in IFR
-Param(1).A = [eye(3),[0,0,d1]';[0,0,0],[1]];
-Param(2).A = [SO3Exp([1,0,0],-pi/2),[0,0,d1]';[0,0,0],[1]];
-Param(3).A = [eye(3),[0,0,d1+d3]';[0,0,0],[1]];
-Param(4).A = [SO3Exp([1,0,0],pi/2),[a4,0,d1+d3]';[0,0,0],[1]];
-Param(5).A = [eye(3),[0,0,d1+d3+d5]';[0,0,0],[1]];
-Param(6).A = [SO3Exp([1,0,0],pi/2),[0.0,0,d1+d3+d5]';[0,0,0],[1]];
-Param(7).A = [SO3Exp([1,0,0],pi),[a7,0,d1+d3+d5]';[0,0,0],[1]];
-
-%% Reference configurations of bodies (i.e. of body-fixed reference frames) w.r.t previous body
-Param(1).B = Param(1).A;
-Param(2).B = SE3Inv(Param(1).A)*Param(2).A;
-Param(3).B = SE3Inv(Param(2).A)*Param(3).A;
-Param(4).B = SE3Inv(Param(3).A)*Param(4).A;
-Param(5).B = SE3Inv(Param(4).A)*Param(5).A;
-Param(6).B = SE3Inv(Param(5).A)*Param(6).A;
-Param(7).B = SE3Inv(Param(6).A)*Param(7).A;
+%% Reference configurations of bodies (i.e. of body-fixed reference frames) w.r.t their previous bodies
+Param(1).B = [eye(3),[0,0,0.]';[0,0,0],[1]];
+Param(2).B = [SO3Exp([1,0,0],pi/2),[0,0,0]';[0,0,0],[1]];
+Param(3).B = [SO3Exp([1,0,0],-pi/2),[0,0,r3]';[0,0,0],[1]];
+Param(4).B = [SO3Exp([1,0,0],-pi/2),[0,0,0]';[0,0,0],[1]];
+Param(5).B = [SO3Exp([1,0,0],pi/2),[0,0,r5]';[0,0,0],[1]];
+Param(6).B = [SO3Exp([1,0,0],pi/2),[0,0,0]';[0,0,0],[1]];
+Param(7).B = [SO3Exp([1,0,0],-pi/2),[0,0,0]';[0,0,0],[1]];
 
 %% Joint screw coordinates in body-fixed representation
-Param(1).X = SE3AdjInvMatrix(Param(1).A)*Param(1).Y;
-Param(2).X = SE3AdjInvMatrix(Param(2).A)*Param(2).Y;
-Param(3).X = SE3AdjInvMatrix(Param(3).A)*Param(3).Y;
-Param(4).X = SE3AdjInvMatrix(Param(4).A)*Param(4).Y;
-Param(5).X = SE3AdjInvMatrix(Param(5).A)*Param(5).Y;
-Param(6).X = SE3AdjInvMatrix(Param(6).A)*Param(6).Y;
-Param(7).X = SE3AdjInvMatrix(Param(7).A)*Param(7).Y;
+Param(1).X = [0, 0, 1, 0., 0., 0]';
+Param(2).X = [0, 0, 1, 0., 0., 0]';
+Param(3).X = [0, 0, 1, 0., 0., 0]';
+Param(4).X = [0, 0, 1, 0., 0., 0]';
+Param(5).X = [0, 0, 1, 0., 0., 0]';
+Param(6).X = [0, 0, 1, 0., 0., 0]';
+Param(7).X = [0, 0, 1, 0., 0., 0]';
 
-%% Intertia paramater as reported in [C. Gaz, 2019]
-Param(1).Mb = MassMatrixMixedData(4.970684, ...
-    [0.70337,-1.39e-04,6.772e-03;
-    -1.39e-04,0.70661,1.9169e-02;
-    6.772e-03,1.9169e-02,9.117e-03], ...
-    [3.875e-03, 2.081e-03, -0.1750]);
-Param(2).Mb = MassMatrixMixedData(0.646926, ...
-    [7.962e-03, -3.925e-03, 1.0254e-02;
-     -3.925e-03, 2.811e-02, 7.04e-04;
-     1.0254e-02, 7.04e-04, 2.5995e-02], ...
-    [-3.141e-03, -2.872e-02, 3.495e-03]);
-Param(3).Mb = MassMatrixMixedData(3.228604, ...
-    [3.7242e-02, -4.761e-03, -1.1396e-02;
-     -4.761e-03, 3.6155e-02, -1.2805e-02;
-     -1.1396e-02, -1.2805e-02, 1.083e-02], ...
-    [2.7518e-02, 3.9252e-02, -6.6502e-02]);
-Param(4).Mb = MassMatrixMixedData(3.587895, ...
-    [2.5853e-02, 7.796e-03, -1.332e-03;
-     7.796e-03, 1.9552e-02, 8.641e-03;
-     -1.332e-03, 8.641e-03, 2.8323e-02], ...
-    [-5.317e-02, 0.104419, 2.7454e-02]);
-Param(5).Mb = MassMatrixMixedData(1.225946, ...
-    [3.5549e-02, -2.117e-03, -4.037e-03;
-     -2.117e-03, 2.9474e-02, 2.29e-04;
-     -4.037e-03, 2.29e-04, 8.627e-03], ...
-    [-1.1953e-02, 4.1065e-02, -3.8437e-02]);
-Param(6).Mb = MassMatrixMixedData(1.666555, ...
-    [1.964e-03, 1.09e-04, -1.158e-03;
-     1.09e-04, 4.354e-03, 3.41e-04;
-     -1.158e-03, 3.41e-04, 5.433e-03], ...
-    [6.0149e-02, -1.4117e-02, -1.0517e-02]);
-Param(7).Mb = MassMatrixMixedData(0.735522, ...
-    [1.2516e-02, -4.28e-04, -1.196e-03;
-     -4.28e-04, 1.0027e-02, -7.41e-04;
-     -1.196e-03, 7.41e-04, 4.815e-03], ...
-    [1.0517e-02, -4.252e-03, 6.1597e-02]);
+%% Mass-Inertia paramater as reported in [Y.R. Sturz, 2017]
+m1   = 3.94781;
+c1x  = -0.00351;
+c1y  = 0.00160;
+c1z  = -0.03139;
+I1xx = 0.00455;
+I1xy = 0.00000;
+I1xz = -0.00000;
+I1yy = 0.00454;
+I1yz = 0.00001;
+I1zz = 0.00029;
 
+m2   = 4.50275;
+c2x  = -0.00767;
+c2y  = 0.16669;
+c2z  = -0.00355;
+I2xx = 0.00032;
+I2xy = 0.00000;
+I2xz = 0.00000;
+I2yy = 0.00010;
+I2yz = -0.00000;
+I2zz = 0.00042;
+
+m3   = 2.45520;
+c3x  = -0.00225;
+c3y  = -0.03492;
+c3z  = -0.02652;
+I3xx = 0.00223;
+I3xy = -0.00005;
+I3xz = 0.00007;
+I3yy = 0.00219;
+I3yz = 0.00007;
+I3zz = 0.00073;
+ 
+m4   = 2.61155;
+c4x  = 0.00020;
+c4y  = -0.05268;
+c4z  = 0.03818;
+I4xx = 0.03844;
+I4xy = 0.00088;
+I4xz = -0.00112;
+I4yy = 0.01144;
+I4yz = -0.00111;
+I4zz = 0.04988;
+
+m5   = 3.41000;
+c5x  = 0.00005;
+c5y  = -0.00237;
+c5z  = -0.21134;
+I5xx = 0.00277;
+I5xy = -0.00001;
+I5xz = 0.00001;
+I5yy = 0.00284;
+I5yz = -0.00000;
+I5zz = 0.00012;
+
+m6   = 3.38795;
+c6x  = 0.00049;
+c6y  = 0.02019;
+c6z  = -0.02750;
+I6xx = 0.00050;
+I6xy = -0.00005;
+I6xz = -0.00003;
+I6yy = 0.00281;
+I6yz = -0.00004;
+I6zz = 0.00232;
+ 
+m7   = 0.35432;
+c7x  = -0.03466;
+c7y  = -0.02324;
+c7z  = 0.07138;
+I7xx = 0.00795;
+I7xy = 0.00022;
+I7xz = -0.00029;
+I7yy = 0.01089;
+I7yz = -0.00029;
+I7zz = 0.00294;
+
+Param(1).Mb = MassMatrixMixedData(m1, ...
+    InertiaMatrix(I1xx, I1xy, I1xz, I1yy, I1yz, I1zz), ...
+    [c1x, c1y, c1z]);
+Param(2).Mb = MassMatrixMixedData(m2, ...
+    InertiaMatrix(I2xx, I2xy, I2xz, I2yy, I2yz, I2zz), ...
+    [c2x, c2y, c2z]);
+Param(3).Mb = MassMatrixMixedData(m3, ...
+    InertiaMatrix(I3xx, I3xy, I3xz, I3yy, I3yz, I3zz), ...
+    [c3x, c3y, c3z]);
+Param(4).Mb = MassMatrixMixedData(m4, ...
+    InertiaMatrix(I4xx, I4xy, I4xz, I4yy, I4yz, I4zz), ...
+    [c4x, c4y, c4z]);
+Param(5).Mb = MassMatrixMixedData(m5, ...
+    InertiaMatrix(I5xx, I5xy, I5xz, I5yy, I5yz, I5zz), ...
+    [c5x, c5y, c5z]);
+Param(6).Mb = MassMatrixMixedData(m6, ...
+    InertiaMatrix(I6xx, I6xy, I6xz, I6yy, I6yz, I6zz), ...
+    [c6x, c6y, c6z]);
+Param(7).Mb = MassMatrixMixedData(m7, ...
+    InertiaMatrix(I7xx, I7xy, I7xz, I7yy, I7yz, I7zz), ...
+    [c7x, c7y, c7z]);
 
 for i=1:n 
     Chain(i).V = zeros(n,1);
@@ -137,7 +179,6 @@ for i=1:N+1
     WDEE = 10*pi*cos(pi*t)*ones(6,1);
     W2DEE = -10*pi*pi*sin(pi*t)*ones(6,1);
     [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)', WEE, WDEE, W2DEE);
-% [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)');
 end
 end
 

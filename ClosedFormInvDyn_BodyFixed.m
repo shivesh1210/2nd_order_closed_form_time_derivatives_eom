@@ -26,14 +26,26 @@ global Param;
 global n; % DOF, number of joints
 global g; % gravity vector
 
+% Using IFR Screw Coordinates
+
+% % Initialization for the first body
+% FK(1).f = SE3Exp(Param(1).Y,q(1));
+% FK(1).C = FK(1).f*Param(1).A;
+% % Compute FK for each body
+% for i = 2:n
+%     FK(i).f = FK(i-1).f*SE3Exp(Param(i).Y,q(i));
+%     FK(i).C = FK(i).f*Param(i).A;    
+% end
+
+% Using Body Fixed Screw Coordinates
 % Initialization for the first body
-FK(1).f = SE3Exp(Param(1).Y,q(1));
-FK(1).C = FK(1).f*Param(1).A;
+FK(1).C = Param(1).B*SE3Exp(Param(1).X,q(1));
 % Compute FK for each body
 for i = 2:n
-    FK(i).f = FK(i-1).f*SE3Exp(Param(i).Y,q(i));
-    FK(i).C = FK(i).f*Param(i).A;    
+    FK(i).C = FK(i-1).C*Param(i).B*SE3Exp(Param(i).X,q(i));
 end
+
+
 % Block diagonal matrix A (6n x 6n) of the Adjoint of body frame
 A = []; 
 for i=1:n
@@ -93,9 +105,13 @@ M = J'*Mb*J;
 C = J'*Cb*J;
 
 % Gravity Term 
-Utemp = zeros(6*n,6);
-Utemp(1:6,1:6) = eye(6);
-U = A*Utemp;
+% Utemp = zeros(6*n,6);
+% Utemp(1:6,1:6) = eye(6);
+% U = A*Utemp;
+U =  [];
+for k=1:n
+    U = vertcat(U,SE3AdjInvMatrix(FK(k).C));
+end
 Vd_0 = zeros(6,1);
 Vd_0(4:6) = g;
 Qgrav = J'*Mb*U*Vd_0;
