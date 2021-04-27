@@ -1,10 +1,5 @@
 % author: Shivesh Kumar
-% last modified: October 18, 2020
-
-% Franke Emika Panda example demonstrating application of the recursive
-% second-order inverse dynamics algorithm presented in the RA-L submission
-% "A Spatial O(n)-Algorithm for the Second-Order Inverse Dynamics and the 
-% Fourth-order Forward and Inverse Kinematics of Serial Manipulators"
+% last modified: April 27, 2021
 
 clear all
 close all
@@ -28,7 +23,7 @@ Param(5).Y = [0, 0, 1, 0, 0., 0]';
 Param(6).Y = [0, -1, 0, 1.033, 0., 0]';
 Param(7).Y = [0, 0, -1, 0., 0.088, 0]';
 
-%% Reference configurations of bodies (i.e. of bdoy-fixed reference frames)
+%% Reference configurations of bodies (i.e. of body-fixed reference frames)
 Param(1).A = [eye(3),[0,0,0.333]';[0,0,0],[1]];
 Param(2).A = [SO3Exp([1,0,0],-pi/2),[0,0,0.333]';[0,0,0],[1]];
 Param(3).A = [eye(3),[0,0,0.649]';[0,0,0],[1]];
@@ -116,7 +111,6 @@ Q = zeros(N,n);
 %% 2nd-order inverse dynamics run
 % Test trajectory according to equation (31) and table I in [C. Gaz et al., RAL, Vol. 4, No. 4, 2019]
 for k=1:6
-%     tic
 for i=1:N+1
     t = (i-1)*dt;
     q(i,:) = [-1.2943753211777664*cos(1.7073873117335832*t), 0.7175341454355011* cos(3.079992797637052*t), -0.5691380764966176* cos(2.1084514453622774*t),   0.5848944158627155*cos(3.5903916041026207*t), 1.6216297151633214* cos(1.4183262544423447*t), -0.9187855709752027*cos(2.285625793808507*t), 0.4217605991935227*cos(5.927533308659986*t)];
@@ -124,233 +118,49 @@ for i=1:N+1
     q2d(i,:) = [3.7733259589312187*cos(1.7073873117335832*t), -6.8067840827778845* cos(3.079992797637052*t), 2.5301417344347326* cos(2.1084514453622774*t),   -7.5398223686155035*cos(3.5903916041026207*t), -3.2621503852173928* cos(1.4183262544423447*t), 4.799814166997865*cos(2.285625793808507*t),   -14.818833271649964*cos(5.927533308659986*t)];
     q3d(i,:) = [-6.442528865314118*sin(1.7073873117335832*t), 20.96484595002641* sin(3.079992797637052*t), -5.334680996940331* sin(2.1084514453622774*t), 27.070914928702237* sin(3.5903916041026207*t),   4.626793537293037*sin(1.4183262544423447*t), -10.970579065577812*sin(2.285625793808507*t), 87.83912781318399*sin(5.927533308659986*t)];
     q4d(i,:) = [-10.999892040114684*cos(1.7073873117335832*t), 64.57157452965167* cos(3.079992797637052*t), -11.247915858545515* cos(2.1084514453622774*t), 97.19518567538881* cos(3.5903916041026207*t),   6.562302747826879*cos(1.4183262544423447*t), -25.074638485300277*cos(2.285625793808507*t), 520.6693559162899*cos(5.927533308659986*t)];
-%     WEE = 10*sin(pi*t)*ones(6,1);
-%     WDEE = 10*pi*cos(pi*t)*ones(6,1);
-%     W2DEE = -10*pi*pi*sin(pi*t)*ones(6,1);
-%     [Q(i,:),Qd(i,:),Q2d(i,:)] = InvDyn_BodyFixed(q(i,:),qd(i,:),q2d(i,:),q3d(i,:),q4d(i,:));
-%     [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)', WEE, WDEE, W2DEE);
-% [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:), V(i,:), Vd(i,:), V2d(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)');
-end;
-% toc
-end;
-
-tic
-[Q,Qd,Q2d] = InvDyn_BodyFixed(q(i,:),qd(i,:),q2d(i,:),q3d(i,:),q4d(i,:));
-toc
-tic
-[Q_closedform, Qd_closedform, Q2d_closedform] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)');
-toc
-% tic
-% [Q_Spatial,Qd_Spatial,Q2d_Spatial] = InvDyn(q(i,:),qd(i,:), q2d(i,:),q3d(i,:),q4d(i,:));
-% toc
-% 
-% figure;
-% hold on
-% plot(Q);
-% plot(Q_closedform,'--');
-% xlabel('Time (s)');
-% ylabel('Generalized Forces (Nm)');
-% legend('Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6','Q7', 'Q1c', 'Q2c','Q3c', 'Q4c', 'Q5c','Q6c','Q7c');
-% title('Closed Form vs Recursive Form: Generalized Forces Q');
-% 
-% figure;
-% hold on
-% plot(Qd);
-% plot(Qd_closedform,'--');
-% xlabel('Time (s)');
-% ylabel('Generalized Forces (Nm)');
-% legend('Q1d', 'Q2d', 'Q3d', 'Q4d', 'Q5d', 'Q6d','Q7d', 'Q1dc', 'Q2dc','Q3dc', 'Q4dc', 'Q5dc','Q6dc','Q7dc');
-% title('Closed Form vs Recursive Form: 1st order Generalized Forces Qdot');
-% 
-% figure;
-% hold on
-% plot(Q2d);
-% plot(Q2d_closedform,'--');
-% xlabel('Time (s)');
-% ylabel('Generalized Forces (Nm)');
-% legend('Q1dd', 'Q2dd', 'Q3dd', 'Q4dd', 'Q5dd', 'Q6dd','Q7dd', 'Q1ddc', 'Q2ddc','Q3ddc', 'Q4ddc', 'Q5ddc','Q6ddc','Q7ddc');
-% title('Closed Form vs Recursive Form: 2nd order Generalized Forces Qddot');
-% 
-% Qdc_num = diff(Q_closedform)/dt;
-% 
-% figure;
-% hold on
-% plot(Qdc_num);
-% plot(Qd_closedform,'--');
-% xlabel('Time (s)');
-% ylabel('Generalized Forces (Nm/s)');
-% legend('Q1d_num', 'Q2d_num', 'Q3d_num', 'Q4d_num', 'Q5d_num', 'Q6d_num','Q7d_num', 'Q1dc', 'Q2dc','Q3dc', 'Q4dc', 'Q5dc','Q6dc','Q7dc');
-% title('Closed Form vs Numerical: 1st order Generalized Forces Qdot');
-% 
-% Qddc_num = diff(Qd_closedform)/dt;
-% 
-% figure;
-% hold on
-% plot(Qddc_num);
-% plot(Q2d_closedform,'--');
-% xlabel('Time (s)');
-% ylabel('Generalized Forces (Nm/s^2)');
-% legend('Q1dd_num', 'Q2dd_num', 'Q3dd_num', 'Q4dd_num', 'Q5dd_num', 'Q6dd_num','Q7dd_num', 'Q1ddc', 'Q2ddc','Q3ddc', 'Q4ddc', 'Q5ddc','Q6ddc','Q7ddc');
-% title('Closed Form vs Numerical: 2nd order Generalized Forces Qddot');
-
-Q_body = Q;
-Qd_body = Qd;
-Q2d_body = Q2d;
-
-return
-
-% store results
-save('q_body.txt','q','-ascii')
-save('qd_body.txt','qd','-ascii')
-save('q2d_body.txt','q2d','-ascii')
-save('QQ_body.txt','Q','-ascii')
-save('QQd_body.txt','Qd','-ascii')
-save('QQ2d_body.txt','Q2d','-ascii')
-
-%%% Visualize results %%%%%%%%%%%%%%
-
-%% Plots of joint coordinates and their derivatives
-
-time=0:dt:T;
-
-figure(1)
-for j=1:n
-    subplot(4,2,j);
-    plot(time,q(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [rad]',j);
-    ylabel(['q' ylabeltext]);
-    grid;
-end
-
-figure(2)
-for j=1:n
-    subplot(4,2,j);
-    plot(time,qd(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [rad/s]',j);
-    ylabel(['qd' ylabeltext]);
-    grid;
-end
-
-figure(3)
-for j=1:n
-    subplot(4,2,j);
-    plot(time,q2d(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [rad/s^2]',j);
-    ylabel(['q2d' ylabeltext]);
-    grid;
-end
-
-figure(4)
-for j=1:n
-    subplot(4,2,j);
-    plot(time,q3d(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [rad/s^3]',j);
-    ylabel(['q3d' ylabeltext]);
-    grid;
-end
-
-figure(5)
-for j=1:n
-    subplot(4,2,j);
-    plot(time,q4d(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [rad/s^4]',j);
-    ylabel(['q4d' ylabeltext]);
-    grid;
-end
-
-
-%% Plots of drive torques and their derivatives
-
-PlotOption = 1;
-
-if PlotOption == 1
-% Option 1 : Plot all torques in one plot
-
-figure(6)
-plot(time,[Q(:,1),Q(:,2),Q(:,3),Q(:,4),Q(:,5),Q(:,6),Q(:,7)])
-figure(7)
-plot(time,[Qd(:,1),Qd(:,2),Qd(:,3),Qd(:,4),Qd(:,5),Qd(:,6),Qd(:,7)])
-figure(8)
-plot(time,[Q2d(:,1),Q2d(:,2),Q2d(:,3),Q2d(:,4),Q2d(:,5),Q2d(:,6),Q2d(:,7)])
-
-else
-
-% Option 2 : Plot each torques in one figure of a pannel plot
-figure(6)
-for j=1:n
-    subplot(4,2,j);
-    plot(Q(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [Nm]',j);
-    ylabel(['Q' ylabeltext]);
-    grid;
-end
-figure(7)
-for j=1:n
-    subplot(4,2,j);
-    plot(Qd(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [Nm/s]',j);
-    ylabel(['Qd' ylabeltext]);
-    grid;
-end
-figure(8)
-for j=1:n
-    subplot(4,2,j);
-    plot(Q2d(:,j))
-    xlabel('time [s]');
-    ylabeltext = sprintf('_%i [Nm/s^2]',j);
-    ylabel(['Qdd' ylabeltext]);
-    grid;
+    WEE = 10*sin(pi*t)*ones(6,1);
+    WDEE = 10*pi*cos(pi*t)*ones(6,1);
+    W2DEE = -10*pi*pi*sin(pi*t)*ones(6,1);
+    [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)', WEE, WDEE, W2DEE);
+% [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)');
 end
 end
 
-return;
+figure;
+hold on
+plot(q);
+xlabel('Time (s)','Interpreter','latex');
+ylabel('Joint Position (rad)','Interpreter','latex');
+legend('$q_1$', '$q_2$','$q_3$', '$q_4$', '$q_5$','$q_6$','$q_7$','Interpreter','latex');
+title('Input Joint Trajectories $\mathbf{q}(t)$','Interpreter','latex');
 
-%% Tests
+figure;
+hold on
+plot(Q_closedform);
+xlabel('Time (s)','Interpreter','latex');
+ylabel('Generalized Forces (Nm)','Interpreter','latex');
+legend('$Q_1$', '$Q_2$','$Q_3$', '$Q_4$', '$Q_5$','$Q_6$','$Q_7$','Interpreter','latex');
+title('Closed Form Generalized Forces $\mathbf{Q}$','Interpreter','latex');
 
-% Check first derivatives
+Qdc_num = diff(Q_closedform)/dt;
 
-time=0:dt:T;
+figure;
+hold on
+plot(Qd_closedform);
+plot(Qdc_num,'--');
+xlabel('Time (s)','Interpreter','latex');
+ylabel('Generalized Forces (Nm/s)','Interpreter','latex');
+legend('$\dot{Q}_1$', '$\dot{Q}_2$','$\dot{Q}_3$', '$\dot{Q}_4$', '$\dot{Q}_5$','$\dot{Q}_6$','$\dot{Q}_7$','$\dot{Q}_1^{num}$', '$\dot{Q}_2^{num}$', '$\dot{Q}_3^{num}$', '$\dot{Q}_4^{num}$', '$\dot{Q}_5^{num}$', '$\dot{Q}_6^{num}$','$\dot{Q}_7^{num}$', 'Interpreter','latex');
+title('Closed Form vs Numerical: 1st order Generalized Forces $\mathbf{\dot{Q}}$','Interpreter','latex');
 
-figure(1);
-plot(time,Q_spat,'b',time,Q_body,'r--');
-Q_Diff=Q_body-Q_spat;
-figure(2);
-plot(time,Q_Diff);
+Qddc_num = diff(Qd_closedform)/dt;
 
-figure(1);
-plot(time,Qd_spat,'b',time,Qd_body,'r--');
-Qd_Diff=Qd_body-Qd_spat;
-figure(2);
-plot(time,Qd_Diff);
+figure;
+hold on
+plot(Q2d_closedform);
+plot(Qddc_num,'--');
+xlabel('Time (s)','Interpreter','latex');
+ylabel('Generalized Forces $(Nm/s^2)$','Interpreter','latex');
+legend('$\ddot{Q}_1$', '$\ddot{Q}_2$','$\ddot{Q}_3$', '$\ddot{Q}_4$', '$\ddot{Q}_5$','$\ddot{Q}_6$','$\ddot{Q}_7$','$\ddot{Q}_1^{num}$', '$\ddot{Q}_2^{num}$', '$\ddot{Q}_3^{num}$', '$\ddot{Q}_4^{num}$', '$\ddot{Q}_5^{num}$', '$\ddot{Q}_6^{num}$','$\ddot{Q}_7^{num}$', 'Interpreter','latex');
+title('Closed Form vs Numerical: 2nd order Generalized Forces $\mathbf{\ddot{Q}}$','Interpreter','latex');
 
-Qd_bodyappr=gradient(Q_body') ./ gradient(time);
-Qd_bodyappr=Qd_bodyappr';
-figure(3);
-plot(time,Qd_body,'b',time,Qd_bodyappr,'r--');
-Qd_bodyDiff=Qd_bodyappr-Qd_body;
-figure(4);
-plot(time,Qd_bodyDiff)
-
-% Check second derivatives
-
-figure(1);
-plot(time,Q2d_spat,'b',time,Q2d_body,'r--');
-Q2d_Diff=Q2d_body-Q2d_spat;
-figure(2);
-plot(time,Q2d_Diff);
-
-%Q2d_spatappr=gradient(Qd_body') ./ gradient(time);
-Q2d_bodyappr=gradient(Qd_bodyappr') ./ gradient(time);
-Q2d_bodyappr=Q2d_bodyappr';
-figure(3);
-plot(time,Q2d_body,'b',time,Q2d_bodyappr,'r--');
-Q2d_bodyDiff=Q2d_bodyappr-Q2d_body;
-figure(4);
-plot(time,Q2d_bodyDiff)
