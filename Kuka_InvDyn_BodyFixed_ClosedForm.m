@@ -188,7 +188,7 @@ plot(q);
 xlabel('Time (s)','Interpreter','latex');
 ylabel('Joint Position (rad)','Interpreter','latex');
 legend('$q_1$', '$q_2$','$q_3$', '$q_4$', '$q_5$','$q_6$','$q_7$','Interpreter','latex');
-title('Input Joint Trajectories $\mathbf{q}(t)$','Interpreter','latex');
+% title('Input Joint Trajectories $\mathbf{q}(t)$','Interpreter','latex');
 
 figure;
 hold on
@@ -196,7 +196,7 @@ plot(Q_closedform);
 xlabel('Time (s)','Interpreter','latex');
 ylabel('Generalized Forces (Nm)','Interpreter','latex');
 legend('$Q_1$', '$Q_2$','$Q_3$', '$Q_4$', '$Q_5$','$Q_6$','$Q_7$','Interpreter','latex');
-title('Closed Form Generalized Forces $\mathbf{Q}$','Interpreter','latex');
+% title('Closed Form Generalized Forces $\mathbf{Q}$','Interpreter','latex');
 
 Qdc_num = diff(Q_closedform)/dt;
 
@@ -205,9 +205,9 @@ hold on
 plot(Qd_closedform);
 plot(Qdc_num,'--');
 xlabel('Time (s)','Interpreter','latex');
-ylabel('Generalized Forces (Nm/s)','Interpreter','latex');
+ylabel('1st Order Generalized Forces $\mathbf{\dot{Q}}$ (Nm/s)','Interpreter','latex');
 legend('$\dot{Q}_1$', '$\dot{Q}_2$','$\dot{Q}_3$', '$\dot{Q}_4$', '$\dot{Q}_5$','$\dot{Q}_6$','$\dot{Q}_7$','$\dot{Q}_1^{num}$', '$\dot{Q}_2^{num}$', '$\dot{Q}_3^{num}$', '$\dot{Q}_4^{num}$', '$\dot{Q}_5^{num}$', '$\dot{Q}_6^{num}$','$\dot{Q}_7^{num}$', 'Interpreter','latex');
-title('Closed Form vs Numerical: 1st order Generalized Forces $\mathbf{\dot{Q}}$','Interpreter','latex');
+% title('Closed Form vs Numerical: 1st order Generalized Forces $\mathbf{\dot{Q}}$','Interpreter','latex');
 
 Qddc_num = diff(Qd_closedform)/dt;
 
@@ -216,7 +216,7 @@ hold on
 plot(Q2d_closedform);
 plot(Qddc_num,'--');
 xlabel('Time (s)','Interpreter','latex');
-ylabel('Generalized Forces $(Nm/s^2)$','Interpreter','latex');
+ylabel('2nd Order Generalized Forces $\mathbf{\ddot{Q}}$ $(Nm/s^2)$','Interpreter','latex');
 legend('$\ddot{Q}_1$', '$\ddot{Q}_2$','$\ddot{Q}_3$', '$\ddot{Q}_4$', '$\ddot{Q}_5$','$\ddot{Q}_6$','$\ddot{Q}_7$','$\ddot{Q}_1^{num}$', '$\ddot{Q}_2^{num}$', '$\ddot{Q}_3^{num}$', '$\ddot{Q}_4^{num}$', '$\ddot{Q}_5^{num}$', '$\ddot{Q}_6^{num}$','$\ddot{Q}_7^{num}$', 'Interpreter','latex');
-title('Closed Form vs Numerical: 2nd order Generalized Forces $\mathbf{\ddot{Q}}$','Interpreter','latex');
+% title('Closed Form vs Numerical: 2nd order Generalized Forces $\mathbf{\ddot{Q}}$','Interpreter','latex');
 

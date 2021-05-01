@@ -26,25 +26,28 @@ global Param;
 global n; % DOF, number of joints
 global g; % gravity vector
 
-% Using IFR Screw Coordinates
-
-% % Initialization for the first body
-% FK(1).f = SE3Exp(Param(1).Y,q(1));
-% FK(1).C = FK(1).f*Param(1).A;
-% % Compute FK for each body
-% for i = 2:n
-%     FK(i).f = FK(i-1).f*SE3Exp(Param(i).Y,q(i));
-%     FK(i).C = FK(i).f*Param(i).A;    
-% end
-
-% Using Body Fixed Screw Coordinates
-% Initialization for the first body
-FK(1).C = Param(1).B*SE3Exp(Param(1).X,q(1));
-% Compute FK for each body
-for i = 2:n
-    FK(i).C = FK(i-1).C*Param(i).B*SE3Exp(Param(i).X,q(i));
+if isfield(Param(1), 'A')
+    % Using IFR Screw Coordinates
+    % Initialization for the first body
+    FK(1).f = SE3Exp(Param(1).Y,q(1));
+    FK(1).C = FK(1).f*Param(1).A;
+    % Compute FK for each body
+    for i = 2:n
+        FK(i).f = FK(i-1).f*SE3Exp(Param(i).Y,q(i));
+        FK(i).C = FK(i).f*Param(i).A;    
+    end
+elseif isfield(Param(1), 'B')
+    % Using Body Fixed Screw Coordinates
+    % Initialization for the first body
+    FK(1).C = Param(1).B*SE3Exp(Param(1).X,q(1));
+    % Compute FK for each body
+    for i = 2:n
+        FK(i).C = FK(i-1).C*Param(i).B*SE3Exp(Param(i).X,q(i));
+    end
+else
+    disp('Absolute (A) or Relative (B) configuration of the bodies should be provided in Param structure!');
+    return;
 end
-
 
 % Block diagonal matrix A (6n x 6n) of the Adjoint of body frame
 A = []; 
