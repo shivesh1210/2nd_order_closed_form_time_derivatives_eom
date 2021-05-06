@@ -20,11 +20,17 @@ if nargin == 7   % if the number of inputs equals 7
   W2DEE = zeros(6,1);
 end
 
+if isa(q,'sym') 
+    symbolic_flag = true;
+else
+    symbolic_flag = false;
+end
+    
 global Chain;
 global Param;
 
 global n; % DOF, number of joints
-global g; % gravity vector
+global g_vector; % gravity vector
 
 if isfield(Param(1), 'A')
     % Using IFR Screw Coordinates
@@ -52,7 +58,11 @@ end
 % Block diagonal matrix A (6n x 6n) of the Adjoint of body frame
 A = []; 
 for i=1:n
-    A = blkdiag(A,eye(6,6));
+    if symbolic_flag
+        A = sym(blkdiag(A,eye(6,6)));
+    else
+        A = blkdiag(A,eye(6,6));
+    end
     for j=1:i-1
         Crel = SE3Inv(FK(i).C)*FK(j).C;
         AdCrel = SE3AdjMatrix(Crel); 
@@ -111,12 +121,27 @@ C = J'*Cb*J;
 % Utemp = zeros(6*n,6);
 % Utemp(1:6,1:6) = eye(6);
 % U = A*Utemp;
+
 U =  [];
 for k=1:n
     U = vertcat(U,SE3AdjInvMatrix(FK(k).C));
 end
-Vd_0 = zeros(6,1);
-Vd_0(4:6) = g;
+
+% U = zeros(6*n,6);
+% j = 1;
+% for k=1:n
+%     U(j:j+5,:) = SE3AdjInvMatrix(FK(k).C);
+%     j = j + 6;
+% end
+
+
+if symbolic_flag
+    Vd_0 = sym(zeros(6,1));
+else
+    Vd_0 = zeros(6,1);
+end
+    
+Vd_0(4:6) = g_vector;
 Qgrav = J'*Mb*U*Vd_0;
 
 % External Wrench
@@ -128,6 +153,13 @@ Qext = J'*Wext;
 % Q = M*q2d + C*qd;   % without gravity
 Q = M*q2d + C*qd + Qgrav + Qext;     % with gravity
 
+if symbolic_flag
+    disp('Inverse dynamics computed! Symbolic simplification starts now.');
+    Q = simplify(Q);
+    disp('Idyn: Symbolic simplification completed! Code generation starts now.');
+    matlabFunction(Q,'file','Inverse_Dynamics_Q');
+    disp('Code generation finished.');
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%First Order Derivatives of EOM%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -165,7 +197,13 @@ Qdext = J'*(Wdext - (A*a)'*Wext);
 
 % Qd = M*q3d + (Md + C)*q2d + Cd*qd;  % without gravity
 Qd = M*q3d + (Md + C)*q2d + Cd*qd + Qdgrav + Qdext; % with gravity
-
+if symbolic_flag
+    disp('1st order Inverse dynamics computed! Symbolic simplification starts now.');
+    Qd = simplify(Qd);
+    disp('1st order Idyn: Symbolic simplification completed! Code generation starts now.');
+    matlabFunction(Qd,'file','Inverse_Dynamics_Qd');
+    disp('Code generation finished.');
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%Second Order Derivatives of EOM%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -211,5 +249,11 @@ Q2dext = J'*(W2dext - 2*(A*a)'*Wdext  + (2*(A*a*A*a)' - (A*ad)' - (A*a*a)')*Wext
 % Second time derivative of generalized forces
 % Q2d = M*q4d + (2*Md + C)*q3d + (M2d + 2*Cd)*q2d + C2d*qd;   % without gravity
 Q2d = M*q4d + (2*Md + C)*q3d + (M2d + 2*Cd)*q2d + C2d*qd + Q2dgrav + Q2dext;   % with gravity and external forces
-
+if symbolic_flag
+    disp('2nd order Inverse dynamics computed! Symbolic simplification starts now.');
+    Q2d = simplify(Q2d);
+    disp('2nd order Idyn: Symbolic simplification completed! Code generation starts now.');
+    matlabFunction(Q2d,'file','Inverse_Dynamics_Q2d');
+    disp('Code generation finished.');
+end
 

@@ -11,8 +11,8 @@ global Chain; % Structure with all temporal data
 global n; % DOF, number of joints
 n = 7;
 
-global g; % gravity vector
-g = [0; 0; 9.80665];
+global g_vector; % gravity vector
+g_vector = [0; 0; 9.80665];
 
 % Geometric parameters of the robot [Y.R. Sturz, 2017]
 r3 = 0.42;
@@ -27,6 +27,15 @@ Param(5).B = [SO3Exp([1,0,0],pi/2),[0,0,r5]';[0,0,0],[1]];
 Param(6).B = [SO3Exp([1,0,0],pi/2),[0,0,0]';[0,0,0],[1]];
 Param(7).B = [SO3Exp([1,0,0],-pi/2),[0,0,0]';[0,0,0],[1]];
 
+%% Reference configurations of bodies (i.e. of body-fixed reference frames) w.r.t previous body
+% Param(1).A = Param(1).B;
+% Param(2).A = Param(1).B*Param(2).B;
+% Param(3).A = Param(2).B*Param(3).B;
+% Param(4).A = Param(3).B*Param(4).B;
+% Param(5).A = Param(4).B*Param(5).B;
+% Param(6).A = Param(5).B*Param(6).B;
+% Param(7).A = Param(6).B*Param(7).B;
+
 %% Joint screw coordinates in body-fixed representation
 Param(1).X = [0, 0, 1, 0., 0., 0]';
 Param(2).X = [0, 0, 1, 0., 0., 0]';
@@ -35,6 +44,15 @@ Param(4).X = [0, 0, 1, 0., 0., 0]';
 Param(5).X = [0, 0, 1, 0., 0., 0]';
 Param(6).X = [0, 0, 1, 0., 0., 0]';
 Param(7).X = [0, 0, 1, 0., 0., 0]';
+
+%% Joint screw coordinates in body-fixed representation
+% Param(1).Y = SE3AdjMatrix(Param(1).A)*Param(1).X;
+% Param(2).Y = SE3AdjMatrix(Param(2).A)*Param(2).X;
+% Param(3).Y = SE3AdjMatrix(Param(3).A)*Param(3).X;
+% Param(4).Y = SE3AdjMatrix(Param(4).A)*Param(4).X;
+% Param(5).Y = SE3AdjMatrix(Param(5).A)*Param(5).X;
+% Param(6).Y = SE3AdjMatrix(Param(6).A)*Param(6).X;
+% Param(7).Y = SE3AdjMatrix(Param(7).A)*Param(7).X;
 
 %% Mass-Inertia paramater as reported in [Y.R. Sturz, 2017]
 m1   = 3.94781;
@@ -167,7 +185,7 @@ Q = zeros(N,n);
 
 %% 2nd-order inverse dynamics run
 % Test trajectory according to equation (31) and table I in [C. Gaz et al., RAL, Vol. 4, No. 4, 2019]
-for k=1:6
+tic
 for i=1:N+1
     t = (i-1)*dt;
     q(i,:) = [-1.2943753211777664*cos(1.7073873117335832*t), 0.7175341454355011* cos(3.079992797637052*t), -0.5691380764966176* cos(2.1084514453622774*t),   0.5848944158627155*cos(3.5903916041026207*t), 1.6216297151633214* cos(1.4183262544423447*t), -0.9187855709752027*cos(2.285625793808507*t), 0.4217605991935227*cos(5.927533308659986*t)];
@@ -179,12 +197,17 @@ for i=1:N+1
     WDEE = 10*pi*cos(pi*t)*ones(6,1);
     W2DEE = -10*pi*pi*sin(pi*t)*ones(6,1);
     [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)', WEE, WDEE, W2DEE);
+%     [Q(i,:), Qd(i,:), Q2d(i,:)] = InvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)');    
+%     [Q_closedform(i,:), Qd_closedform(i,:), Q2d_closedform(i,:)] = ClosedFormInvDyn_BodyFixed(q(i,:)',qd(i,:)',q2d(i,:)',q3d(i,:)',q4d(i,:)');
 end
-end
+toc
+
+% Build the time vector
+time=0:dt:T;
 
 figure;
 hold on
-plot(q);
+plot(time, q);
 xlabel('Time, $t$ (s)','Interpreter','latex');
 ylabel('Joint Position, $\mathbf{q}(t)$ (rad)','Interpreter','latex');
 legend('$q_1$', '$q_2$','$q_3$', '$q_4$', '$q_5$','$q_6$','$q_7$','Interpreter','latex');
@@ -192,7 +215,7 @@ legend('$q_1$', '$q_2$','$q_3$', '$q_4$', '$q_5$','$q_6$','$q_7$','Interpreter',
 
 figure;
 hold on
-plot(Q_closedform);
+plot(time, Q_closedform);
 xlabel('Time, $t$ (s)','Interpreter','latex');
 ylabel('Generalized Forces, $\mathbf{Q}(t)$ (Nm)','Interpreter','latex');
 legend('$Q_1$', '$Q_2$','$Q_3$', '$Q_4$', '$Q_5$','$Q_6$','$Q_7$','Interpreter','latex');
@@ -202,8 +225,8 @@ Qdc_num = diff(Q_closedform)/dt;
 
 figure;
 hold on
-plot(Qd_closedform);
-plot(Qdc_num,'--');
+plot(time, Qd_closedform);
+plot(time(1:end-1), Qdc_num,'--');
 xlabel('Time, $t$ (s)','Interpreter','latex');
 ylabel('1st Order Generalized Forces, $\mathbf{\dot{Q}(t)}$ (Nm/s)','Interpreter','latex');
 legend('$\dot{Q}_1$', '$\dot{Q}_2$','$\dot{Q}_3$', '$\dot{Q}_4$', '$\dot{Q}_5$','$\dot{Q}_6$','$\dot{Q}_7$','$\dot{Q}_1^{num}$', '$\dot{Q}_2^{num}$', '$\dot{Q}_3^{num}$', '$\dot{Q}_4^{num}$', '$\dot{Q}_5^{num}$', '$\dot{Q}_6^{num}$','$\dot{Q}_7^{num}$', 'Interpreter','latex');
@@ -213,8 +236,8 @@ Qddc_num = diff(Qd_closedform)/dt;
 
 figure;
 hold on
-plot(Q2d_closedform);
-plot(Qddc_num,'--');
+plot(time, Q2d_closedform);
+plot(time(1:end-1), Qddc_num,'--');
 xlabel('Time, $t$ (s)','Interpreter','latex');
 ylabel('2nd Order Generalized Forces, $\mathbf{\ddot{Q}(t)}$ $(Nm/s^2)$','Interpreter','latex');
 legend('$\ddot{Q}_1$', '$\ddot{Q}_2$','$\ddot{Q}_3$', '$\ddot{Q}_4$', '$\ddot{Q}_5$','$\ddot{Q}_6$','$\ddot{Q}_7$','$\ddot{Q}_1^{num}$', '$\ddot{Q}_2^{num}$', '$\ddot{Q}_3^{num}$', '$\ddot{Q}_4^{num}$', '$\ddot{Q}_5^{num}$', '$\ddot{Q}_6^{num}$','$\ddot{Q}_7^{num}$', 'Interpreter','latex');
