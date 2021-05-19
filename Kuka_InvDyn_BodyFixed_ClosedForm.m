@@ -21,9 +21,9 @@ r5 = 0.4;
 %% Reference configurations of bodies (i.e. of body-fixed reference frames) w.r.t their previous bodies
 Param(1).B = [eye(3),[0,0,0.]';[0,0,0],[1]];
 Param(2).B = [SO3Exp([1,0,0],pi/2),[0,0,0]';[0,0,0],[1]];
-Param(3).B = [SO3Exp([1,0,0],-pi/2),[0,0,r3]';[0,0,0],[1]];
+Param(3).B = [SO3Exp([1,0,0],-pi/2),[0,r3,0]';[0,0,0],[1]];
 Param(4).B = [SO3Exp([1,0,0],-pi/2),[0,0,0]';[0,0,0],[1]];
-Param(5).B = [SO3Exp([1,0,0],pi/2),[0,0,r5]';[0,0,0],[1]];
+Param(5).B = [SO3Exp([1,0,0],pi/2),[0,-r5,0]';[0,0,0],[1]];
 Param(6).B = [SO3Exp([1,0,0],pi/2),[0,0,0]';[0,0,0],[1]];
 Param(7).B = [SO3Exp([1,0,0],-pi/2),[0,0,0]';[0,0,0],[1]];
 
