@@ -7,9 +7,10 @@ This repository contains the MATLAB code for computing 2nd order analytical time
 # Example scripts
 * Panda_InvDyn_BodyFixed_ClosedForm.m: 2nd order time derivatives in closed form which uses robot parameters from Franka Emika Panda robot
 * Kuka_InvDyn_BodyFixed_ClosedForm.m: 2nd order time derivatives in closed form which uses robot parameters from KUKA IIWA LBR robot
+* RR_symbolic.m: Generate symbolic equations for 2nd order time derivatives using the closed form expressions for the planar 2R robot
 
 # Main script
-* ClosedFormInvDyn_BodyFixed.m: Function to compute 2nd order inverse dynamics in closed form
+* ClosedFormInvDyn_BodyFixed.m: Function to compute 2nd order inverse dynamics in closed form - works in both numerical and symbolic modes
 
 # Helper functions
 * SE3Exp.m: Function to compute exponential mapping for SE(3)
