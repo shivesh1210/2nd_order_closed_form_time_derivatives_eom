@@ -141,7 +141,7 @@ else
     Vd_0 = zeros(6,1);
 end
     
-Vd_0(4:6) = g_vector;
+Vd_0(4:6) = -g_vector;
 Qgrav = J'*Mb*U*Vd_0;
 
 % External Wrench

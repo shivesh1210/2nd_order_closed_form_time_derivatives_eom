@@ -12,7 +12,7 @@ global n; % DOF, number of joints
 n = 7;
 
 global g; % gravity vector
-g = [0; 0; 9.80665];
+g = [0; 0; -9.80665];
 
 %% Joint screw coordinates in spatial representation
 % Geometric parameters of the robot

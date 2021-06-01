@@ -12,7 +12,7 @@ global n; % DOF, number of joints
 n = 7;
 
 global g_vector; % gravity vector
-g_vector = [0; 0; 9.80665];
+g_vector = [0; 0; -9.80665];
 
 % Geometric parameters of the robot [Y.R. Sturz, 2017]
 r3 = 0.42;
