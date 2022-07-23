@@ -22,3 +22,18 @@ This repository contains the MATLAB code for computing 2nd order analytical time
 * MassMatrixMixedData.m: Function to build mass-inertia matrix in SE(3) from mass, inertia and center of mass information
 * InertiaMatrix.m: Function to build rotational inertia matrix from minimal set of parameters
 * ScrewCoordinatesIFR.m: Function to compute the screw coordinates vector in the inertial frame of reference (IFR) from 3D axis vector and origin vector
+
+# Citation
+Müller, A., Kumar, S. Closed-form time derivatives of the equations of motion of rigid body systems. Multibody Syst Dyn 53, 257–273 (2021). https://doi.org/10.1007/s11044-021-09796-8
+```
+@article{mueller2021closed,
+  title={Closed-form time derivatives of the equations of motion of rigid body systems},
+  author={Mueller, Andreas and Kumar, Shivesh},
+  journal={Multibody System Dynamics},
+  volume={53},
+  number={3},
+  pages={257--273},
+  year={2021},
+  publisher={Springer Netherlands}
+}
+```
